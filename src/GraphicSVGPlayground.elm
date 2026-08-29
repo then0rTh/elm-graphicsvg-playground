@@ -121,7 +121,7 @@ collisionRectangle a b =
     xOverlap && yOverlap
 
 
-{-| Check whether a circle and an rectangle overlap.
+{-| Check whether a circle and a rectangle overlap.
 
     collisionCircleRectangle
         { center = ( 1, 1 ), radius = 3 }
@@ -251,7 +251,7 @@ type alias ProgramPicture =
 
 
 {-| Make a picture. Use this as the `main =` definition of your program.
-Accepts a list of shapes as it's only argument.
+Accepts a list of shapes as its only argument.
 
     main =
         picture
@@ -705,12 +705,12 @@ subToMsg getKeyState sub =
 screenPixelsToSize : ( Int, Int ) -> ( Float, Float )
 screenPixelsToSize ( x, y ) =
     let
-        coeficient =
+        coefficient =
             100 / sqrt (toFloat (x * y))
 
         normalize : Int -> Float
         normalize n =
-            toFloat n * coeficient
+            toFloat n * coefficient
     in
     ( normalize x
     , normalize y

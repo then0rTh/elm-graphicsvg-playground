@@ -3,7 +3,7 @@
 A friendly, `main =`-oriented API for drawing pictures, animations, gamebooks,
 and games with [`MacCASOutreach/graphicsvg`](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/).
 
-The actual shapes, colors and transformations are all from then [`GraphicSVG` module](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/GraphicSVG)
+The actual shapes, colors and transformations are all from the [`GraphicSVG` module](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/GraphicSVG)
 
 
 ```elm
@@ -47,7 +47,7 @@ or `zigzag` to animate shapes without hand-rolling the math.
 
 ```elm
 import GraphicSVG exposing (..)
-import GraphicSVGPlayground exposing (..
+import GraphicSVGPlayground exposing (..)
 
 main =
     programAnimation view
