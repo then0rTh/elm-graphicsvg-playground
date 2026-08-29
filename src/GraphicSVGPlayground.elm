@@ -1,7 +1,11 @@
 module GraphicSVGPlayground exposing
-    ( distance, collisionCircle, collisionRectangle, collisionCircleRectangle
+    ( programPicture
+    , programAnimation
     , repeat, wave, zigzag
-    , programPicture, programAnimation, programGamebook, programGame, GameTickInfo, Subscription(..), mapSubscription
+    , programGamebook
+    , programGame, GameTickInfo
+    , Subscription(..), mapSubscription
+    , distance, collisionCircle, collisionRectangle, collisionCircleRectangle
     )
 
 {-| A beginner-friendly toolkit for building pictures, animations, gamebooks,
@@ -10,23 +14,43 @@ and games on top of the [`GraphicSVG` module](https://package.elm-lang.org/packa
 Start with [`programPicture`](#programPicture) to draw a static image, then
 grow into [`programAnimation`](#programAnimation) or [`programGame`](#programGame)
 as your project needs movement and interaction. Use the helpers in
-[Point Helpers](#point-helpers) and [Animation Helpers](#animation-helpers)
+[Animation Helpers](#animation-helpers) and [Collision Helpers](#collision-helpers)
 along the way.
 
 
-# Point Helpers
+## Pictures
 
-@docs distance, collisionCircle, collisionRectangle, collisionCircleRectangle
+@docs programPicture
 
 
-# Animation Helpers
+## Animations
+
+@docs programAnimation
+
+
+### Animation Helpers
 
 @docs repeat, wave, zigzag
 
 
-# Programs
+## Gamebooks
 
-@docs programPicture, programAnimation, programGamebook, programGame, GameTickInfo, Subscription, mapSubscription
+@docs programGamebook
+
+
+## Games
+
+@docs programGame, GameTickInfo
+
+
+### Subscriptions
+
+@docs Subscription, mapSubscription
+
+
+### Collision Helpers
+
+@docs distance, collisionCircle, collisionRectangle, collisionCircleRectangle
 
 -}
 
