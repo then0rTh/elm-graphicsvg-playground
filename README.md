@@ -3,7 +3,7 @@
 A friendly, `main =`-oriented API for drawing pictures, animations, gamebooks,
 and games with [`MacCASOutreach/graphicsvg`](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/).
 
-The actual shapes, colors and transformations are all from the [`GraphicSVG` module](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/GraphicSVG)
+The actual shapes, colors and transformations are all from the [`GraphicSVG` module](https://package.elm-lang.org/packages/MacCASOutreach/graphicsvg/latest/GraphicSVG).
 
 
 ```elm
@@ -53,9 +53,10 @@ main =
     programAnimation view
 
 view time =
-    [ circle (wave 50 90 7 time)
-        |> filled lightBlue
-    ]
+    group
+        [ circle (wave 50 90 7 time)
+            |> filled lightBlue
+        ]
 ```
 
 ### A gamebook
@@ -86,9 +87,10 @@ transitions state =
         []
 
 view state =
-    [ text "Hello!"
-        |> filled black
-    ]
+    group
+        [ text "Hello!"
+            |> filled black
+        ]
 ```
 
 ### A game
@@ -119,10 +121,11 @@ update () model =
     model
 
 view model =
-    [ circle 5
-        |> filled red
-        |> move ( model.x, 0 )
-    ]
+    group
+        [ circle 5
+            |> filled red
+            |> move ( model.x, 0 )
+        ]
 ```
 
 See the [`GraphicSVGPlayground`](https://package.elm-lang.org/packages/then0rTh/elm-graphicsvg-playground/latest/GraphicSVGPlayground)

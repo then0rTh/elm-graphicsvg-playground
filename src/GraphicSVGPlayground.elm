@@ -4,8 +4,9 @@ module GraphicSVGPlayground exposing
     , repeat, wave, zigzag
     , programGamebook
     , programGame, GameTickInfo
+    , movePoint
     , Subscription(..), mapSubscription
-    , distance, collisionCircle, collisionRectangle, collisionCircleRectangle
+    , distance, distance1D, collisionCircle, collisionRectangle, collisionCircleRectangle
     )
 
 {-| A beginner-friendly toolkit for building pictures, animations, gamebooks,
@@ -14,8 +15,8 @@ and games on top of the [`GraphicSVG` module](https://package.elm-lang.org/packa
 Start with [`programPicture`](#programPicture) to draw a static image, then
 grow into [`programAnimation`](#programAnimation) or [`programGame`](#programGame)
 as your project needs movement and interaction. Use the helpers in
-[Animation Helpers](#animation-helpers) and [Collision Helpers](#collision-helpers)
-along the way.
+[Animation Helpers](#animation-helpers), [Game Helpers](#game-helpers)
+and [Collision Helpers](#collision-helpers) along the way.
 
 
 ## Pictures
@@ -43,6 +44,11 @@ along the way.
 @docs programGame, GameTickInfo
 
 
+### Game Helpers
+
+@docs movePoint
+
+
 ### Subscriptions
 
 @docs Subscription, mapSubscription
@@ -50,7 +56,7 @@ along the way.
 
 ### Collision Helpers
 
-@docs distance, collisionCircle, collisionRectangle, collisionCircleRectangle
+@docs distance, distance1D, collisionCircle, collisionRectangle, collisionCircleRectangle
 
 -}
 
@@ -60,7 +66,7 @@ import GraphicSVG.EllieApp
 
 
 
--- POINT HELPERS
+-- COLLISION HELPERS
 
 
 {-| Find the distance between two points.
@@ -78,6 +84,13 @@ distance ( firstX, firstY ) ( secondX, secondY ) =
     sqrt ((secondX - firstX) ^ 2 + (secondY - firstY) ^ 2)
 
 
+{-| Find the distance between two numbers. That is, the distance on a single axis.
+
+    distance1D 3 -2 == 5
+
+This may be useful when your game is limited to a single axis.
+
+-}
 distance1D : Float -> Float -> Float
 distance1D a b =
     abs (a - b)
@@ -191,8 +204,9 @@ collisionCircleRectangle circle rect =
 Here is an animation with a rectangle that grows and then suddenly resets:
 
     view time =
-        [ rectangle red 10 (repeat 20 80 4 time)
-        ]
+        group
+            [ rectangle red 10 (repeat 20 80 4 time)
+            ]
 
 The height ramps from 20 to 80 over four seconds, then drops back to 20 and
 starts over.
@@ -211,8 +225,9 @@ repeat lo hi period time =
 Here is an animation with a circle that resizes:
 
     view time =
-        [ circle lightBlue (wave 50 90 7 time)
-        ]
+        group
+            [ circle lightBlue (wave 50 90 7 time)
+            ]
 
 The radius of the circle will cycle between 50 and 90 every seven seconds.
 It kind of looks like it is breathing.
@@ -226,14 +241,15 @@ wave lo hi period time =
     lo + (hi - lo) * (1 + cos (turns (toFrac period time))) / 2
 
 
-{-| Zig zag between two numbers.
+{-| Zigzag between two numbers.
 
 Here is an animation with a rectangle that tips back and forth:
 
     view time =
-        [ rectangle lightGreen 20 100
-            |> rotate (zigzag -20 20 4 time)
-        ]
+        group
+            [ rectangle lightGreen 20 100
+                |> rotate (zigzag -20 20 4 time)
+            ]
 
 It gets rotated by an angle. The angle cycles from -20 degrees to 20 degrees
 every four seconds. Similar to `wave`, but feels sharper and less organic.
@@ -278,7 +294,7 @@ type alias ProgramPicture =
 Accepts a list of shapes as its only argument.
 
     main =
-        picture
+        programPicture
             [ triangle 10
                 |> filled black
             , circle 2
@@ -290,7 +306,7 @@ programPicture :
     List (GraphicSVG.Shape Never)
     -> ProgramPicture
 programPicture shapes =
-    programAnimation (always shapes)
+    programAnimation (always (GraphicSVG.group shapes))
 
 
 
@@ -317,16 +333,17 @@ time in seconds since the animation started. You can use it in functions
 `repeat`, `zigzag`, or `wave` to actually animate your picture.
 
     main =
-        animation view
+        programAnimation view
 
     view time =
-        [ square (repeat 0 10 2 time)
-            |> filled red
-        ]
+        group
+            [ square (repeat 0 10 2 time)
+                |> filled red
+            ]
 
 -}
 programAnimation :
-    (Float -> List (GraphicSVG.Shape Never))
+    (Float -> GraphicSVG.Shape Never)
     -> ProgramAnimation
 programAnimation viewFunction =
     let
@@ -338,7 +355,7 @@ programAnimation viewFunction =
         update msg _ =
             never msg
 
-        view : AnimationModel -> List (GraphicSVG.Shape AnimationMsg)
+        view : AnimationModel -> GraphicSVG.Shape AnimationMsg
         view model =
             viewFunction model
 
@@ -390,8 +407,9 @@ keyboard in real time.
             []
 
     view state =
-        [ ...
-        ]
+        group
+            [ ...
+            ]
 
 where:
 
@@ -400,13 +418,13 @@ where:
   - `transitions` - given the current state, list the available choices
     (each with a `name` and the `target` state to jump to when clicked).
 
-  - `view` - draw the current state (same as you would a picture, i.e. list of shapes).
+  - `view` - draw the current state (same as you would a picture, i.e. a group of shapes).
 
 -}
 programGamebook :
     { init : userModel
     , transitions : userModel -> List { name : String, target : userModel }
-    , view : userModel -> List (GraphicSVG.Shape Never)
+    , view : userModel -> GraphicSVG.Shape Never
     }
     ->
         ProgramGame
@@ -438,7 +456,7 @@ programGamebook config =
                 |> GraphicSVG.notifyTap opt.target
                 |> GraphicSVG.move ( 0, toFloat (index * optionHeight) )
 
-        view : GamebookModel userModel -> List (GraphicSVG.Shape (GamebookMsg userModel))
+        view : GamebookModel userModel -> GraphicSVG.Shape (GamebookMsg userModel)
         view model =
             let
                 transitions =
@@ -450,20 +468,20 @@ programGamebook config =
                 screenHeight =
                     Tuple.second model.screenSize
             in
-            [ config.view model.userModel
-                |> GraphicSVG.group
-                |> GraphicSVG.map never
-                |> GraphicSVG.move ( 0, transitionsHeight / 2 )
-            , GraphicSVG.square 500
-                |> GraphicSVG.filled GraphicSVG.lightGray
-                |> GraphicSVG.move ( 0, -250 - screenHeight / 2 + transitionsHeight )
-            , transitions
-                |> List.reverse
-                |> List.indexedMap viewOption
-                |> GraphicSVG.group
-                |> GraphicSVG.map GamebookUserInteraction
-                |> GraphicSVG.move ( 0, screenHeight / -2 + 3 )
-            ]
+            GraphicSVG.group
+                [ config.view model.userModel
+                    |> GraphicSVG.map never
+                    |> GraphicSVG.move ( 0, transitionsHeight / 2 )
+                , GraphicSVG.square 500
+                    |> GraphicSVG.filled GraphicSVG.lightGray
+                    |> GraphicSVG.move ( 0, -250 - screenHeight / 2 + transitionsHeight )
+                , transitions
+                    |> List.reverse
+                    |> List.indexedMap viewOption
+                    |> GraphicSVG.group
+                    |> GraphicSVG.map GamebookUserInteraction
+                    |> GraphicSVG.move ( 0, screenHeight / -2 + 3 )
+                ]
 
         tick : GameTickInfo -> GamebookModel userModel -> GamebookModel userModel
         tick info model =
@@ -547,10 +565,11 @@ model that updates every frame, keyboard input, and screen size.
         model
 
     view model =
-        [ circle 5
-            |> filled red
-            |> move ( model.x, 0 )
-        ]
+        group
+            [ circle 5
+                |> filled red
+                |> move ( model.x, 0 )
+            ]
 
 where:
 
@@ -563,7 +582,7 @@ where:
   - `update` - called in response to `subscriptions` events (e.g. a key being
     pressed once).
 
-  - `view` - draw the model's shapes.
+  - `view` - draw the model's shape.
 
   - `subscriptions` - a list of one-off key events (see [`Subscription`](#Subscription))
     that trigger `update`.
@@ -573,7 +592,7 @@ programGame :
     { init : userModel
     , update : userMsg -> userModel -> userModel
     , tick : GameTickInfo -> userModel -> userModel
-    , view : userModel -> List (GraphicSVG.Shape userMsg)
+    , view : userModel -> GraphicSVG.Shape userMsg
     , subscriptions : List (Subscription userMsg)
     }
     -> ProgramGame userModel userMsg
@@ -664,6 +683,32 @@ programGame config =
 
 
 
+-- GAME HELPERS
+
+
+{-| Move a 2D point by a given offset.
+
+    ( 5, 3 )
+        |> movePoint ( 1, -1 )
+
+The above will result in ( 6, 2 )
+
+This is similar to moving a shape with `|> move ( 1, -1 )`.
+
+Moving a point is useful in games, where you store, for example, the player's
+position in the model and need to update it.
+When you want to move the player to the right, you would write:
+
+    model.playerPosition
+        |> movePoint ( 1, 0 )
+
+-}
+movePoint : ( Float, Float ) -> ( Float, Float ) -> ( Float, Float )
+movePoint ( dx, dy ) ( x, y ) =
+    ( x + dx, y + dy )
+
+
+
 -- SUBSCRIPTIONS
 
 
@@ -741,13 +786,13 @@ screenPixelsToSize ( x, y ) =
     )
 
 
-renderNormalized : ( Int, Int ) -> List (GraphicSVG.Shape msg) -> GraphicSVG.Collage msg
+renderNormalized : ( Int, Int ) -> GraphicSVG.Shape msg -> GraphicSVG.Collage msg
 renderNormalized screen shapes =
     let
         ( w, h ) =
             screenPixelsToSize screen
     in
-    GraphicSVG.collage w h shapes
+    GraphicSVG.collage w h [ shapes ]
 
 
 stringToKey : String -> GraphicSVG.EllieApp.Keys
