@@ -437,19 +437,22 @@ programAnimationHelp viewFunction =
             let
                 ts =
                     toFloat (round (model.timestamp * 10)) / 10
+
+                fontSize =
+                    3
             in
             GraphicSVG.group
                 [ viewFunction model.timestamp
                     |> GraphicSVG.map never
                 , GraphicSVG.text ("time: " ++ String.fromFloat ts)
-                    |> GraphicSVG.size 3
+                    |> GraphicSVG.size fontSize
                     |> GraphicSVG.filled GraphicSVG.black
-                    |> GraphicSVG.move ( -model.screenWidth / 2, model.screenHeight / 2 - 5 )
+                    |> GraphicSVG.move ( -model.screenWidth / 2 + 1, model.screenHeight / 2 - fontSize )
                 , GraphicSVG.text "press spacebar to pause/play"
-                    |> GraphicSVG.size 3
+                    |> GraphicSVG.size fontSize
                     |> GraphicSVG.alignRight
                     |> GraphicSVG.filled GraphicSVG.black
-                    |> GraphicSVG.move ( model.screenWidth / 2, model.screenHeight / 2 - 3 )
+                    |> GraphicSVG.move ( model.screenWidth / 2 - 1, model.screenHeight / 2 - fontSize )
                 ]
 
         tick : GameTickInfo -> AnimationHelpModel -> AnimationHelpModel
