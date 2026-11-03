@@ -1,6 +1,6 @@
 module GraphicSVGPlayground exposing
     ( programPicture
-    , programAnimation
+    , programAnimation, programAnimationHelp
     , repeat, wave, zigzag
     , programGamebook
     , programGame, GameTickInfo
@@ -26,7 +26,7 @@ and [Collision Helpers](#collision-helpers) along the way.
 
 ## Animations
 
-@docs programAnimation
+@docs programAnimation, programAnimationHelp
 
 
 ### Animation Helpers
@@ -369,6 +369,103 @@ programAnimation viewFunction =
         , tick = tick
         , view = view
         , subscriptions = []
+        }
+
+
+
+-- ANIMATION DEBUG HELPER
+
+
+type alias AnimationHelpModel =
+    { timestamp : Float
+    , speed : Float
+    , screenWidth : Float
+    , screenHeight : Float
+    }
+
+
+type AnimationHelpMsg
+    = Toggle
+
+
+type alias ProgramAnimationHelp =
+    ProgramGame AnimationHelpModel AnimationHelpMsg
+
+
+{-| Can be used in place of programAnimation.
+The only difference is that it renders the current time on screen,
+and allows to pause the world using the space key.
+
+    main =
+        programAnimationHelp view
+
+    view time =
+        group
+            [ square (repeat 0 10 2 time)
+                |> filled red
+            ]
+
+-}
+programAnimationHelp :
+    (Float -> GraphicSVG.Shape Never)
+    -> ProgramAnimationHelp
+programAnimationHelp viewFunction =
+    let
+        init : AnimationHelpModel
+        init =
+            { timestamp = 0
+            , speed = 1
+            , screenWidth = 0
+            , screenHeight = 0
+            }
+
+        update : AnimationHelpMsg -> AnimationHelpModel -> AnimationHelpModel
+        update msg model =
+            case msg of
+                Toggle ->
+                    { model
+                        | speed =
+                            if model.speed == 0 then
+                                1
+
+                            else
+                                0
+                    }
+
+        view : AnimationHelpModel -> GraphicSVG.Shape AnimationHelpMsg
+        view model =
+            let
+                ts =
+                    toFloat (round (model.timestamp * 10)) / 10
+            in
+            GraphicSVG.group
+                [ viewFunction model.timestamp
+                    |> GraphicSVG.map never
+                , GraphicSVG.text ("time: " ++ String.fromFloat ts)
+                    |> GraphicSVG.size 3
+                    |> GraphicSVG.filled GraphicSVG.black
+                    |> GraphicSVG.move ( -model.screenWidth / 2, model.screenHeight / 2 - 5 )
+                , GraphicSVG.text "press spacebar to pause/play"
+                    |> GraphicSVG.size 3
+                    |> GraphicSVG.alignRight
+                    |> GraphicSVG.filled GraphicSVG.black
+                    |> GraphicSVG.move ( model.screenWidth / 2, model.screenHeight / 2 - 3 )
+                ]
+
+        tick : GameTickInfo -> AnimationHelpModel -> AnimationHelpModel
+        tick info model =
+            { model
+                | timestamp = model.timestamp + info.delta * model.speed
+                , screenWidth = info.screenWidth
+                , screenHeight = info.screenHeight
+            }
+    in
+    programGame
+        { init = init
+        , update = update
+        , tick = tick
+        , view = view
+        , subscriptions = [ OnKeyDown "Space" Toggle ]
         }
 
 
