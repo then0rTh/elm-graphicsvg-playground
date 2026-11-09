@@ -479,7 +479,7 @@ programAnimationHelp viewFunction =
             GraphicSVG.group
                 [ viewFunction model.timestamp
                     |> GraphicSVG.map never
-                    |> GraphicSVG.move ( 0, fontSize / 2 )
+                    |> GraphicSVG.move ( 0, -fontSize / 2 )
                 , GraphicSVG.group
                     [ GraphicSVG.rectangle model.screenWidth (fontSize + 0.5)
                         |> GraphicSVG.filled GraphicSVG.gray
