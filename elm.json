@@ -16,7 +16,8 @@
         "elm/json": "1.1.4 <= v < 2.0.0",
         "elm/time": "1.0.0 <= v < 2.0.0",
         "elm/url": "1.0.0 <= v < 2.0.0",
-        "elm/virtual-dom": "1.0.5 <= v < 2.0.0"
+        "elm/virtual-dom": "1.0.5 <= v < 2.0.0",
+        "elmcraft/core-extra": "2.3.0 <= v < 3.0.0"
     },
     "test-dependencies": {
         "elm-explorations/test": "2.2.1 <= v < 3.0.0"

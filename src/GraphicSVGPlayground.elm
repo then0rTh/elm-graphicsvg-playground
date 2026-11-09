@@ -61,6 +61,7 @@ and [Collision Helpers](#collision-helpers) along the way.
 -}
 
 import Browser.Events
+import Float.Extra
 import GraphicSVG
 import GraphicSVG.EllieApp
 
@@ -379,6 +380,7 @@ programAnimation viewFunction =
 type alias AnimationHelpModel =
     { timestamp : Float
     , speed : Float
+    , running : Bool
     , screenWidth : Float
     , screenHeight : Float
     }
@@ -386,6 +388,10 @@ type alias AnimationHelpModel =
 
 type AnimationHelpMsg
     = Toggle
+    | Faster
+    | Slower
+    | Back
+    | Forward
 
 
 type alias ProgramAnimationHelp =
@@ -415,6 +421,7 @@ programAnimationHelp viewFunction =
         init =
             { timestamp = 0
             , speed = 1
+            , running = True
             , screenWidth = 0
             , screenHeight = 0
             }
@@ -423,42 +430,90 @@ programAnimationHelp viewFunction =
         update msg model =
             case msg of
                 Toggle ->
-                    { model
-                        | speed =
-                            if model.speed == 0 then
-                                1
+                    { model | running = not model.running }
 
-                            else
-                                0
-                    }
+                Faster ->
+                    { model | speed = min 3 (model.speed + 0.2) }
+
+                Slower ->
+                    { model | speed = max -3 (model.speed - 0.2) }
+
+                Back ->
+                    { model | timestamp = max 0 (model.timestamp - 0.1) }
+
+                Forward ->
+                    { model | timestamp = max 0 (model.timestamp + 0.1) }
+
+        fontSize =
+            3
+
+        uiText text =
+            GraphicSVG.text text
+                |> GraphicSVG.size fontSize
+                |> GraphicSVG.centered
+                |> GraphicSVG.filled GraphicSVG.black
+                |> GraphicSVG.move ( 0, -1 )
+
+        uiTextTime text =
+            GraphicSVG.text text
+                |> GraphicSVG.size (fontSize - 0.5)
+                |> GraphicSVG.alignRight
+                |> GraphicSVG.fixedwidth
+                |> GraphicSVG.filled GraphicSVG.black
+                |> GraphicSVG.move ( 0, -1 )
+
+        button msg width text =
+            GraphicSVG.group
+                [ GraphicSVG.roundedRect width fontSize 0.5
+                    |> GraphicSVG.filled GraphicSVG.lightBlue
+                , uiText text
+                ]
+                |> GraphicSVG.notifyTap msg
 
         view : AnimationHelpModel -> GraphicSVG.Shape AnimationHelpMsg
         view model =
             let
-                ts =
-                    toFloat (round (model.timestamp * 10)) / 10
-
-                fontSize =
-                    3
+                numToText =
+                    Float.Extra.toFixedDecimalPlaces 1
             in
             GraphicSVG.group
                 [ viewFunction model.timestamp
                     |> GraphicSVG.map never
-                , GraphicSVG.text ("time: " ++ String.fromFloat ts)
-                    |> GraphicSVG.size fontSize
-                    |> GraphicSVG.filled GraphicSVG.black
-                    |> GraphicSVG.move ( -model.screenWidth / 2 + 1, model.screenHeight / 2 - fontSize )
-                , GraphicSVG.text "press spacebar to pause/play"
-                    |> GraphicSVG.size fontSize
-                    |> GraphicSVG.alignRight
-                    |> GraphicSVG.filled GraphicSVG.black
-                    |> GraphicSVG.move ( model.screenWidth / 2 - 1, model.screenHeight / 2 - fontSize )
+                    |> GraphicSVG.move ( 0, fontSize / 2 )
+                , GraphicSVG.group
+                    [ GraphicSVG.rectangle model.screenWidth (fontSize + 0.5)
+                        |> GraphicSVG.filled GraphicSVG.gray
+                    , button Back 8 "Back"
+                        |> GraphicSVG.move ( -36, 0 )
+                    , uiTextTime (numToText model.timestamp ++ "s")
+                        |> GraphicSVG.move ( -22, 0 )
+                    , button Forward 12 "Forward"
+                        |> GraphicSVG.move ( -15, 0 )
+                    , button Toggle 8 <|
+                        if model.running then
+                            "Pause"
+
+                        else
+                            "Play"
+                    , button Slower 10 "Slower"
+                        |> GraphicSVG.move ( 15, 0 )
+                    , uiText (numToText model.speed ++ "x")
+                        |> GraphicSVG.move ( 24, 0 )
+                    , button Faster 9 "Faster"
+                        |> GraphicSVG.move ( 33, 0 )
+                    ]
+                    |> GraphicSVG.move ( 0, model.screenHeight / 2 - fontSize / 2 - 0.25 )
                 ]
 
         tick : GameTickInfo -> AnimationHelpModel -> AnimationHelpModel
         tick info model =
             { model
-                | timestamp = model.timestamp + info.delta * model.speed
+                | timestamp =
+                    if model.running then
+                        max 0 (model.timestamp + info.delta * model.speed)
+
+                    else
+                        model.timestamp
                 , screenWidth = info.screenWidth
                 , screenHeight = info.screenHeight
             }
@@ -468,7 +523,13 @@ programAnimationHelp viewFunction =
         , update = update
         , tick = tick
         , view = view
-        , subscriptions = [ OnKeyDown "Space" Toggle ]
+        , subscriptions =
+            [ OnKeyDown "Space" Toggle
+            , OnKeyDown "LeftArrow" Back
+            , OnKeyDown "RightArrow" Forward
+            , OnKeyDown "UpArrow" Faster
+            , OnKeyDown "DownArrow" Slower
+            ]
         }
 
 

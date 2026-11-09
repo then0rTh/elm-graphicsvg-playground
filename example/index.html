@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Example</title>
+        <script src="bundle.js"></script>
+        <script type="module">
+            Elm.Main.init({
+                node: document.getElementById("elm"),
+                flags: [window.innerWidth, window.innerHeight],
+            });
+        </script>
+    </head>
+    <body>
+        <div id="elm"></div>
+    </body>
+</html>
