@@ -400,7 +400,8 @@ type alias ProgramAnimationHelp =
 
 {-| Can be used in place of programAnimation.
 The only difference is that it renders the current time on screen,
-and allows to pause the world using the space key.
+and allows to pause the world and manipulate time, using the arrow
+keys and spacebar, or the buttons rendered on screen.
 
     main =
         programAnimationHelp view
@@ -428,6 +429,11 @@ programAnimationHelp viewFunction =
 
         update : AnimationHelpMsg -> AnimationHelpModel -> AnimationHelpModel
         update msg model =
+            let
+                sanitizeTimestamp t =
+                    (toFloat (round (t * 10)) / 10)
+                        |> max 0
+            in
             case msg of
                 Toggle ->
                     { model | running = not model.running }
@@ -439,10 +445,10 @@ programAnimationHelp viewFunction =
                     { model | speed = max -3 (model.speed - 0.2) }
 
                 Back ->
-                    { model | timestamp = max 0 (model.timestamp - 0.1) }
+                    { model | timestamp = sanitizeTimestamp (model.timestamp - 0.1) }
 
                 Forward ->
-                    { model | timestamp = max 0 (model.timestamp + 0.1) }
+                    { model | timestamp = sanitizeTimestamp (model.timestamp + 0.1) }
 
         fontSize =
             3
@@ -472,10 +478,6 @@ programAnimationHelp viewFunction =
 
         view : AnimationHelpModel -> GraphicSVG.Shape AnimationHelpMsg
         view model =
-            let
-                numToText =
-                    Float.Extra.toFixedDecimalPlaces 1
-            in
             GraphicSVG.group
                 [ viewFunction model.timestamp
                     |> GraphicSVG.map never
@@ -484,9 +486,9 @@ programAnimationHelp viewFunction =
                     [ GraphicSVG.rectangle model.screenWidth (fontSize + 0.5)
                         |> GraphicSVG.filled GraphicSVG.gray
                     , button Back 8 "Back"
-                        |> GraphicSVG.move ( -36, 0 )
-                    , uiTextTime (numToText model.timestamp ++ "s")
-                        |> GraphicSVG.move ( -22, 0 )
+                        |> GraphicSVG.move ( -37, 0 )
+                    , uiTextTime (Float.Extra.toFixedDecimalPlaces 2 model.timestamp ++ "s")
+                        |> GraphicSVG.move ( -21.6, 0 )
                     , button Forward 12 "Forward"
                         |> GraphicSVG.move ( -15, 0 )
                     , button Toggle 8 <|
@@ -497,8 +499,8 @@ programAnimationHelp viewFunction =
                             "Play"
                     , button Slower 10 "Slower"
                         |> GraphicSVG.move ( 15, 0 )
-                    , uiText (numToText model.speed ++ "x")
-                        |> GraphicSVG.move ( 24, 0 )
+                    , uiText (Float.Extra.toFixedDecimalPlaces 1 model.speed ++ "x")
+                        |> GraphicSVG.move ( 24.25, 0 )
                     , button Faster 9 "Faster"
                         |> GraphicSVG.move ( 33, 0 )
                     ]
