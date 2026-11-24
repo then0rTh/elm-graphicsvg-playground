@@ -38,14 +38,14 @@ circularSuite : String -> (Float -> Float -> Float -> Float -> Float) -> Test
 circularSuite name fn =
     Test.describe name
         [ alwaysWithinTest fn
-        , Test.fuzz2 loHiFuzzer periodFuzzer "returns hi at period" <|
+        , Test.fuzz2 loHiFuzzer periodFuzzer "returns lo at period" <|
             \( lo, hi ) ( period, periodCoef ) ->
                 fn lo hi period (period * toFloat periodCoef)
-                    |> Expect.within (Expect.Absolute 0.0001) hi
-        , Test.fuzz2 loHiFuzzer periodFuzzer "returns lo halfway through the period" <|
+                    |> Expect.within (Expect.Absolute 0.0001) lo
+        , Test.fuzz2 loHiFuzzer periodFuzzer "returns hi halfway through the period" <|
             \( lo, hi ) ( period, periodCoef ) ->
                 fn lo hi period (period * toFloat periodCoef + period / 2)
-                    |> Expect.within (Expect.Absolute 0.0001) lo
+                    |> Expect.within (Expect.Absolute 0.0001) hi
         ]
 
 

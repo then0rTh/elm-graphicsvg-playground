@@ -230,7 +230,8 @@ Here is an animation with a circle that resizes:
             [ circle lightBlue (wave 50 90 7 time)
             ]
 
-The radius of the circle will cycle between 50 and 90 every seven seconds.
+The radius of the circle will cycle between 50 and 90 every seven seconds,
+starting at 50.
 It kind of looks like it is breathing.
 
 The last parameter must be the `time` parameter from [`programAnimation`](#programAnimation),
@@ -239,7 +240,7 @@ or the `timestamp` field from [`programGame`](#programGame)'s `tick` function.
 -}
 wave : Float -> Float -> Float -> Float -> Float
 wave lo hi period time =
-    lo + (hi - lo) * (1 + cos (turns (toFrac period time))) / 2
+    lo + (hi - lo) * (1 - cos (turns (toFrac period time))) / 2
 
 
 {-| Zigzag between two numbers.
@@ -253,7 +254,7 @@ Here is an animation with a rectangle that tips back and forth:
             ]
 
 It gets rotated by an angle. The angle cycles from -20 degrees to 20 degrees
-every four seconds. Similar to `wave`, but feels sharper and less organic.
+every four seconds, starting at -20. Similar to `wave`, but feels sharper and less organic.
 
 The last parameter must be the `time` parameter from [`programAnimation`](#programAnimation),
 or the `timestamp` field from [`programGame`](#programGame)'s `tick` function.
@@ -261,7 +262,7 @@ or the `timestamp` field from [`programGame`](#programGame)'s `tick` function.
 -}
 zigzag : Float -> Float -> Float -> Float -> Float
 zigzag lo hi period time =
-    lo + (hi - lo) * abs (2 * toFrac period time - 1)
+    lo + (hi - lo) * (1 - abs (2 * toFrac period time - 1))
 
 
 toFrac : Float -> Float -> Float
